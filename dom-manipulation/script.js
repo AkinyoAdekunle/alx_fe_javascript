@@ -1,113 +1,126 @@
-const quoteDisplay = document.getElementById('quoteDisplay');
-const newQuote = document.getElementById('newQuote');
-const newQuoteText = document.getElementById('newQuoteText');
-
 const quotes = [
-    {
-        text:"I'm selfish, impatient and a little insecure. I make mistakes, I am out of control and at times hard to handle. But if you can't handle me at my worst, then you sure as hell don't deserve me at my best.",
-        category:"Attitude"
-    },
-    {
-        text:"Maybe one day music will just be music, and there won't be these categories; it'll just be different shades of music.",
-        category:"Life"
-    },
-    {
-        text:"Be who you are and say what you feel, because those who mind don't matter, and those who matter don't mind.",
-        category:"Motivational"
-    },
-    {
-        text:"You know you're in love when you can't fall asleep because reality is finally better than your dreams",
-        category:"love"
-    }
+    { text: "If you catch a bird, let it go. If it comes back, keep it well. But if it never comes back, then it's never meant to be yours.", category: "Motivation" },
+    { text: "Do what you can, with what you have, where you are.", category: "Inspiration" },
+    { text: "Success is not the key to happiness. Happiness is the key to success.", category: "Success" }
 ];
 
-newQuote.addEventListener("click",showRandomQuote);
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+});
 
-function showRandomQuote(){
-    const randomQuotes = Math.floor((Math.random())*quotes.length);
-    quoteDisplay.innerHTML = `${quotes[randomQuotes].text}<br><br><strong>${quotes[randomQuotes].category}</strong>`;
+function showRandomQuote() {
+    const quoteDisplay = document.getElementById("quoteDisplay");
+    if (!quoteDisplay) return;
+    if (quotes.length === 0) {
+        quoteDisplay.innerHTML = "No quotes available. Please add some!";
+        return;
+    }
+    const randomIndex = Math.floor(Math.random() * quotes.length);
+    const randomQuote = quotes[randomIndex];
+    quoteDisplay.innerHTML = `<p>${randomQuote.text} - <strong>(${randomQuote.category})</strong></p>`;
+}
 
-    const createAddQuoteForm = document.createElement('form');
-    createAddQuoteForm.innerHTML = `
-    <div>
+function addQuote() {
+    const newQuoteTextElement = document.getElementById("newQuoteText");
+    const newQuoteCategoryElement = document.getElementById("newQuoteCategory");
+    
+    if (!newQuoteTextElement || !newQuoteCategoryElement) return;
+    
+    const newQuoteText = newQuoteTextElement.value.trim();
+    const newQuoteCategory = newQuoteCategoryElement.value.trim();
+    
+    if (newQuoteText === "" || newQuoteCategory === "") {
+        alert("Please enter both a quote and a category.");
+        return;
+    }
+    
+    quotes.push({ text: newQuoteText, category: newQuoteCategory });
+    newQuoteTextElement.value = "";
+    newQuoteCategoryElement.value = "";
+    showRandomQuote();
+}
+
+
+
+function createAddQuoteForm() {
+    const formContainer = document.createElement("div");
+    formContainer.innerHTML = `
         <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
         <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-        <button type="button" onclick="addQuote(event)">Add Quote</button>
-    </div>
+        <button onclick="addQuote()">Add Quote</button>
     `;
-    quoteDisplay.appendChild(createAddQuoteForm);
-}
+    document.body.appendChild(formContainer);
 
-function addQuote(event){
-    event.preventDefault();
-    const newQuoteText = document.getElementById('newQuoteText').value.trim();
-    const newQuoteCategory = document.getElementById('newQuoteCategory').value.trim();
 
-    const newQuoteValue= { 
-        text:newQuoteText,
-        category:newQuoteCategory
-    };
+const quotes = [
+    { text: "The only way to do great work is to love what you do.", category: "Motivation" },
+    { text: "Do what you can, with what you have, where you are.", category: "Inspiration" },
+    { text: "Success is not the key to happiness. Happiness is the key to success.", category: "Success" }
+];
 
-    if(newQuoteText !== "" && newQuoteCategory !== ""){
-        quotes.push(newQuoteValue);
-        saveQuotes();
+document.addEventListener("DOMContentLoaded", () => {
+    document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+});
+
+function showRandomQuote() {
+    const quoteDisplay = document.getElementById("quoteDisplay");
+    if (!quoteDisplay) return;
+    if (quotes.length === 0) {
+        quoteDisplay.innerHTML = "No quotes available. Please add some!";
+        return;
     }
-    else{
-        alert("Enter a quote & category");
+    const randomIndex = Math.floor(Math.random() * quotes.length);
+    const randomQuote = quotes[randomIndex];
+    quoteDisplay.innerHTML = `<p>${randomQuote.text} - <strong>(${randomQuote.category})</strong></p>`;
+}
+
+function addQuote() {
+    const newQuoteTextElement = document.getElementById("newQuoteText");
+    const newQuoteCategoryElement = document.getElementById("newQuoteCategory");
+    
+    if (!newQuoteTextElement || !newQuoteCategoryElement) return;
+    
+    const newQuoteText = newQuoteTextElement.value.trim();
+    const newQuoteCategory = newQuoteCategoryElement.value.trim();
+    
+    if (newQuoteText === "" || newQuoteCategory === "") {
+        alert("Please enter both a quote and a category.");
+        return;
     }
-
-    document.getElementById('newQuoteText').value = "";
-    document.getElementById('newQuoteCategory').value = "";
-};
-
-function syncQuotes() {
-    fetchQuotesFromServer();
-    saveQuotes();
+    
+    quotes.push({ text: newQuoteText, category: newQuoteCategory });
+    newQuoteTextElement.value = "";
+    newQuoteCategoryElement.value = "";
+    showRandomQuote();
 }
 
-function startServerSync() {
-    setInterval(syncQuotes, 30000);
+function createAddQuoteForm() {
+    const formContainer = document.createElement("div");
+    formContainer.innerHTML = `
+        <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
+        <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
+        <button onclick="addQuote()">Add Quote</button>
+    `;
+    document.body.appendChild(formContainer);
 }
 
-async function fetchQuotesFromServer() {
-    try {
-        const response = await fetch('https://jsonplaceholder.typicode.com/posts');
-        const serverData = await response.json();
-        const serverQuotes = serverData.map(post => ({ text: post.title, category: 'Server' }));
-        
-        const conflicts = findConflicts(quotes, serverQuotes);
-        if (conflicts.length > 0) {
-            showNotification(`${conflicts.length} conflicts detected. Using server version.`);
-            quotes = mergeQuotes(quotes, serverQuotes);
-            saveQuotes();
-            showRandomQuote();
-        }
-    } catch (error) {
-        showNotification('Error syncing with server');
-    }
-}
+// ---------------------------- LocalStorage Logic -----------------------------
 
-function findConflicts(local, remote) {
-    return local.filter(lq => 
-        remote.some(rq => rq.text === lq.text && rq.category !== lq.category)
-    );
-}
-
-function mergeQuotes(local, remote) {
-    const localCopy = local.filter(lq => 
-        !remote.some(rq => rq.text === lq.text)
-    );
-    return [...localCopy, ...remote];
-}
-
+// Save quotes to local storage
 function saveQuotes() {
     localStorage.setItem('quotes', JSON.stringify(quotes));
-    sessionStorage.setItem('lastUpdated', new Date().toISOString());
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-    initializeQuotes();
-    populateCategories();
-    showRandomQuote();
-    startServerSync();
+// Load quotes from local storage
+function loadQuotes() {
+    const storedQuotes = localStorage.getItem('quotes');
+    if (storedQuotes) {
+        quotes = JSON.parse(storedQuotes);
+    }
+}
+
+// Call loadQuotes when the page is loaded
+document.addEventListener("DOMContentLoaded", () => {
+    loadQuotes();
+    document.getElementById("newQuote").addEventListener("click", showRandomQuote);
 });
